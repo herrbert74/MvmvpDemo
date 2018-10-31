@@ -6,7 +6,7 @@ Slides for this presentation can be found [here!](https://speakerdeck.com/sddami
 ## Forked by herrbert74
 
 I wanted to learn from this application (especially ViewModel in MVP, but also Kotlin and RxJava testing), but some problems prohibited the understanding of it, so I fixed them by rewriting the app step by step:
-* Separated the 'branches' like basic, MVP, VM to branches
+* Separated the 'branches' like basic, RX, VM to branches
 * Simplified overly complicated names according to my own naming rules. Also removed lower case file names
 * Fixed a bug in the tests
 * Converted space-tabs to tabs, because this is now mine, so hey, my rules apply
