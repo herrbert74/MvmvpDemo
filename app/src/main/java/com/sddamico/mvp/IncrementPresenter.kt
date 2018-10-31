@@ -1,33 +1,37 @@
 package com.sddamico.mvp
 
-typealias ViewContract = IncrementActivityContract.IncrementActivityViewContract
-typealias PresenterContract = IncrementActivityContract.IncrementPresenterContract
+import com.jakewharton.rxrelay2.BehaviorRelay
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 
-interface IncrementActivityContract {
-	interface IncrementActivityViewContract : MvpView {
-		fun setCountView(countString : String)
-	}
-
-	interface IncrementPresenterContract : Presenter<IncrementActivityContract.IncrementActivityViewContract> {
-		fun onIncrementClicked()
-	}
+interface IncrementRxViewContract : MvpView {
+	fun setCountView(countString: String)
 }
 
-class IncrementPresenter : BasePresenter<ViewContract>(), PresenterContract {
+interface IncrementRxPresenterContract : Presenter<IncrementRxViewContract> {
+	fun onIncrementClicked()
+}
 
-	private var count = 0
+class IncrementPresenter : BasePresenter<IncrementRxViewContract>(), IncrementRxPresenterContract {
 
-	override fun attach(view: ViewContract) {
+	private var count = BehaviorRelay.createDefault(0)
+
+	override fun attach(view: IncrementRxViewContract) {
 		super.attach(view)
 
-		view.setCountView(getCountString())
+		getCountString()
+				.autoDispose()
+				.subscribe { view.setCountView(it) }
 	}
 
 	override fun onIncrementClicked() {
-		count++
-
-		view?.setCountView(getCountString())
+		count.take(1)
+				.observeOn(Schedulers.io())
+				.map { it.plus(1) }
+				.observeOn(AndroidSchedulers.mainThread())
+				.autoDispose()
+				.subscribe(count)
 	}
 
-	private fun getCountString() = count.toString()
+	private fun getCountString() = count.map { it.toString() }
 }

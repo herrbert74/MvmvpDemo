@@ -16,7 +16,7 @@
 			android:name=".IncrementActivity"
 			android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
 			android:exported="true"
-			android:label="MVP"
+			android:label="MVP + RX"
 			android:rotationAnimation="seamless"
 			android:windowSoftInputMode="adjustPan|stateHidden">
 

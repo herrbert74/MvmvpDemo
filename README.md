@@ -3,7 +3,7 @@ Testbed application for my MVMVP Architecture demoed at DroidconNYC 2018
 
 Slides for this presentation can be found [here!](https://speakerdeck.com/sddamico/architecting-your-app-with-mvp-and-viewmodels)
 
-Forked by herrbert74
+## Forked by herrbert74
 
 I wanted to learn from this application (especially ViewModel in MVP, but also Kotlin and RxJava testing), but some problems prohibited the understanding of it, so I fixed them by rewriting the app step by step:
 * Separated the 'branches' like basic, MVP, VM to branches
