@@ -11,3 +11,4 @@ I wanted to learn from this application (especially ViewModel in MVP, but also K
 * Fixed a bug in the tests
 * Converted space-tabs to tabs, because this is now mine, so hey, my rules apply
 * Omitted data binding as I'm not interested in it at this time
+* Removed a few Lint warnings

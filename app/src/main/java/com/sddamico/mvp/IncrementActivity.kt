@@ -1,13 +1,22 @@
 package com.sddamico.mvp
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProviders
 import com.jakewharton.rxbinding2.view.clicks
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
+import com.uber.autodispose.AutoDispose.autoDisposable
+import com.uber.autodispose.ScopeProvider
+import com.ubercab.autodispose.rxlifecycle.RxLifecycleInterop
+import io.reactivex.CompletableSource
 import kotlinx.android.synthetic.main.activity_increment.*
 
-class IncrementActivity : AppCompatActivity(), IncrementRxViewContract {
+class IncrementActivity : RxAppCompatActivity(), ScopeProvider {
 
-	private lateinit var presenter: IncrementRxPresenterContract
+	override fun requestScope(): CompletableSource = RxLifecycleInterop.from(this).requestScope()
+
+	private val viewModel by lazy { ViewModelProviders.of(this).get(IncrementStateViewModel::class.java) }
+
+	private lateinit var presenter: IncrementPresenterContract
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -16,34 +25,36 @@ class IncrementActivity : AppCompatActivity(), IncrementRxViewContract {
 
 		setContentView(R.layout.activity_increment)
 
-		increment.clicks().subscribe { presenter.onIncrementClicked() }
+		observeActions()
+		observeState()
 	}
 
-	override fun onStart() {
-		super.onStart()
 
-		presenter.attach(this)
+	private fun observeState() {
+		viewModel.state
+				.`as`(autoDisposable(this))
+				.subscribe { render(it) }
 	}
 
-	override fun onStop() {
-		presenter.detach()
-
-		super.onStop()
+	private fun render(state: IncrementState) {
+		counter.text = state.count
 	}
 
-	override fun setCountView(countString: String) {
-		counter.text = countString
+	private fun observeActions() {
+		increment.clicks()
+				.`as`(autoDisposable(this))
+				.subscribe { presenter.onIncrementClicked() }
 	}
 
 	private fun initPresenter() {
-		val maybePresenter = lastCustomNonConfigurationInstance as IncrementRxPresenterContract?
+		val maybePresenter = lastCustomNonConfigurationInstance as IncrementPresenterContract?
 
 		if (maybePresenter != null) {
 			presenter = maybePresenter
 		}
 
 		if (!::presenter.isInitialized) {
-			presenter = IncrementPresenter()
+			presenter = IncrementPresenter(viewModel)
 		}
 	}
 

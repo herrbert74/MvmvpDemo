@@ -1,46 +1,18 @@
 package com.sddamico.mvp
 
-import com.babestudios.incrementmvp.rx.PresenterScope
-import com.jakewharton.rxrelay2.BehaviorRelay
-import com.uber.autodispose.AutoDispose
-import com.uber.autodispose.lifecycle.CorrespondingEventsFunction
-import com.uber.autodispose.lifecycle.LifecycleScopeProvider
-import com.uber.autodispose.lifecycle.LifecycleScopes
-import io.reactivex.CompletableSource
+import android.annotation.SuppressLint
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.zipWith
 
-abstract class BasePresenter<V : MvpView> : Presenter<V>, LifecycleScopeProvider<PresenterScope> {
+abstract class BasePresenter<S, out VM : StateViewModel<S>>(override val viewModel: VM) : Presenter<S, VM> {
 
-	private val lifecycle = BehaviorRelay.createDefault<PresenterScope>(PresenterScope.DETACHED)!!
-
-	var view: V? = null
-
-	override fun attach(view: V) {
-		this.view = view
-		lifecycle.accept(PresenterScope.ATTACHED)
+	@SuppressLint("CheckResult")
+	fun sendToViewModel(reducer: (S) -> S) {
+		Observable.just(reducer)
+				.observeOn(AndroidSchedulers.mainThread()) // ensures mutations happen serially on main thread
+				.zipWith(viewModel.state)
+				.map { (reducer, state) -> reducer.invoke(state) }
+				.subscribe(viewModel.state)
 	}
-
-	override fun detach() {
-		this.view = null
-		lifecycle.accept(PresenterScope.DETACHED)
-	}
-
-	override fun lifecycle(): Observable<PresenterScope> = lifecycle
-
-	override fun correspondingEvents(): CorrespondingEventsFunction<PresenterScope> {
-		return CorrespondingEventsFunction {
-			when (it) {
-				PresenterScope.DETACHED -> PresenterScope.ATTACHED
-				PresenterScope.ATTACHED -> PresenterScope.DETACHED
-			}
-		}
-	}
-
-	override fun peekLifecycle(): PresenterScope? = lifecycle.value
-
-	override fun requestScope(): CompletableSource = LifecycleScopes.resolveScopeFromLifecycle(this)
-
-	private inline fun <T> autoDisposable(it: Observable<T>) = AutoDispose.autoDisposable<T>(this).apply(it)
-
-	internal inline fun <T> Observable<T>.autoDispose() = this.`as` { autoDisposable(this) }
 }
