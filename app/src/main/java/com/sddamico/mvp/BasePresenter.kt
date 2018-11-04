@@ -1,6 +1,5 @@
 package com.sddamico.mvp
 
-import com.babestudios.incrementmvp.rx.PresenterScope
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.uber.autodispose.AutoDispose
 import com.uber.autodispose.lifecycle.CorrespondingEventsFunction
